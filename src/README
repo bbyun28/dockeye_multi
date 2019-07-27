@@ -1,0 +1,17 @@
+dockeyeM_energy.c  C code backend interaction energy compute engine
+dockeyeM_energy.so  shared object file compiled from dockeye_energy.c
+                   as an importable Python module
+dockeyeM_c_vX.Y.py  version X.Y python code run within PyMol, which 
+                   implements the graphical front end. Imports the
+                   module dockeye_energy from dockeye_energy.so
+                   to run the backend
+dockeyeM_c.py       logical link to specific version code, link to this
+                   file should be placed in your PyMol installation's
+                   external package dynamic load directory,
+                   ...pymol....something/lib-dynload
+dockeyeM_getpose.py extracts low energy ligand poses from the dockeye
+                   logfile into a pdb format file
+make_conformers.py generates a ligand *.atm file for use with dockeye_multi
+                   from a vina autodock *.pdbqt
+                   file containing multiple ligand conformers based
+                   on rotations around torsions specified in pdbqt file

@@ -1,0 +1,81 @@
+===============================
+Dockeye_multi is an interactive graphical tool 
+to dock small ligands/drugs to proteins
+Currently works as a plugin to PyMol,
+which simply is used as a graphic rendering engine
+this is a fork off dockeye that handles multple
+ligand conformations- this requies an extra
+setup step to place multiple pregenerated 
+conformer entries into the ligand pdb file.
+
+===============================
+directories:
+===============================
+src (source files, shared object file, makefile)
+example (all files needed to run two
+examples interleukin and antibody_digoxin)
+
+===============================
+INSTALLATION
+===============================
+
+1)
+If you are lucky, the shared object file dockeyeM_energy.so
+provided in the src will work- it is a 32 bit library because that
+is what a lot of pymol versions uses. Otherwise go to 
+Option 2) compile from C code
+
+try 
+% file dockeyeM_energy.so
+to see what kind of file it is
+
+try 
+% ldd dockeyeM_energy.so
+to list system libraries it uses, if it finds them you are good to go!
+otherwise you probably need to install 32-bit environment on your machine
+or add suitable entries in your $LD_LIBRARY environment variable path.
+
+create a soft link to dockeye_energy.so in the src directory
+from your PyMol installation's default directory for dynamic library loads, 
+this  is somewhere like
+/home/sharp/Downloads/pymol/ext/lib/python2.4/lib-dynload/
+
+2)
+Compile from source code
+A single C source file dockeyeM_energy.c needs to be compiled
+to generate the 32bit shared object file dockeyeM_energy.so
+since this object file will be imported as a module in Python
+you'll need the python2.7 development/include (usually part of the 
+standard Python install)
+
+Look at the Makefile, which has rules for Ubuntu Linux and Mac OS,
+and edit to match your OS. After compilation create link as in Option 1
+
+===============================
+to use dockeye_multi within PyMol:
+===============================
+By convention here a pdb file with radii in occ. and charges in b-factor
+columns has the *.atm extension.
+1)
+Prepare your protein structure file in pdb format:
+Add atomic radius and atomic charge into occupance and bfactor columns.
+see the dockeye README for details.
+
+the ligand prep differs in dockeye_multi: you need to pre-generate 
+the conformers you want to explore and put them into the 
+pdb format atm file, using the 
+MODEL
+ENDMDL
+separators used for NMR structures.
+
+one way to do this is
+
+1a) generate a lignad *.pdbqt file from the pdb file using the autodock
+MGL tools.  This will do 3 things: add hydrogens, add charges, and
+specify which bonds (torsions) can rotate
+1b) run make_conformers.py on this *.pdbqt file to generate the 
+conformers in pdb format.  this file is used in dockeye_multi,
+along with the standard *.atm protein file
+
+
+For more details on using dockeye, run the example directory cases
