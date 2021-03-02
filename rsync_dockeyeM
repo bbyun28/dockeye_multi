@@ -1,0 +1,6 @@
+rsync -avulz --delete --exclude \*.o --exclude \Makefile  \
+  --exclude \*.log --exclude .\*.swp \
+  ~/source/dockeye_multi/ ~/Dropbox/kas_files/dockeye_multi/
+rsync -avulz --exclude \*.o --exclude \Makefile  \
+  --exclude \*.log --exclude .\*.swp \
+  ~/Dropbox/kas_files/dockeye_multi/ ~/source/dockeye_multi/

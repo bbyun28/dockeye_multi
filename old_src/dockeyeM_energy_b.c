@@ -12,7 +12,6 @@ int MAXATOM = 6000;
 int MAXCIRCLE = 500;
 int NUM_POINTS = 10;
 int MAXDATA = 70000; /* should be at least 12*MAXCIRCLE*NUM_POINTS+5 */
-int MAXMOD = 20;
 /* pymol cgo keywords */
 float BEGIN = 2.0;
 float END = 3.0;
@@ -93,11 +92,11 @@ static PyObject * energy_c(PyObject *self, PyObject *args)
 {
     PyObject* atom_data;
     PyObject* disp_obj = PyList_New(MAXDATA+5); /* list object to pass back results */
-    int i,j,k,n1,n2,nmod,nm;
+    int i,j,k,n1,n2;
     int ioff;
     float array[6];
     float crd1[MAXATOM][3];
-    float crd2[MAXMOD][MAXATOM][3];
+    float crd2[MAXATOM][3];
     float rad1[MAXATOM];
     float rad2[MAXATOM];
     float q1[MAXATOM];
@@ -106,8 +105,6 @@ static PyObject * energy_c(PyObject *self, PyObject *args)
     float circle_color[MAXCIRCLE],circle_rad[MAXCIRCLE];
     int ninter,ninter_at,ndata;
     float et,ee,ev;
-    float et_best;
-    int nbest;
     float dxyz[3],xyzmid[3],dxyz_at[3];
     float rcut2,d2,efact,dd,sigma;
     float rr,rr2,rr6,rr12,evdw,eelect,rr9;
@@ -123,21 +120,12 @@ static PyObject * energy_c(PyObject *self, PyObject *args)
     }
     /*
     get # of atoms stored as floats in 1st two elements
-    and # of models
     */
     ioff = 0;
     n1 = PyFloat_AsDouble(PyList_GET_ITEM(atom_data, (Py_ssize_t)ioff));
     ioff++;
     n2 = PyFloat_AsDouble(PyList_GET_ITEM(atom_data, (Py_ssize_t)ioff));
     ioff++;
-    nmod = PyFloat_AsDouble(PyList_GET_ITEM(atom_data, (Py_ssize_t)ioff));
-    ioff++;
-    // printf("# of models %d \n ",nmod);
-    if (nmod > MAXMOD){
-         printf ("too many models - will only do %d \n",MAXMOD);
-         nmod = MAXMOD;
-    }
-
     if (n1 > MAXATOM){
          printf ("# atoms %d > MAXATOM %d: will truncate \n",n1, MAXATOM);
          n1 = MAXATOM;
@@ -150,35 +138,25 @@ static PyObject * energy_c(PyObject *self, PyObject *args)
     get rest of data
     */
     for (i=0 ; i<n1; i++){
-      rad1[i] = PyFloat_AsDouble(PyList_GET_ITEM(atom_data, (Py_ssize_t)ioff));
-      ioff++;
-    }
-    for (i=0 ; i<n1; i++){
-      q1[i] = PyFloat_AsDouble(PyList_GET_ITEM(atom_data, (Py_ssize_t)ioff));
-      ioff++;
-    }
-    for (i=0 ; i<n1; i++){
       for (k=0; k<3; k++){
         crd1[i][k] = PyFloat_AsDouble(PyList_GET_ITEM(atom_data, (Py_ssize_t)ioff));
         ioff++;
       }
+      rad1[i] = PyFloat_AsDouble(PyList_GET_ITEM(atom_data, (Py_ssize_t)ioff));
+      ioff++;
+      q1[i] = PyFloat_AsDouble(PyList_GET_ITEM(atom_data, (Py_ssize_t)ioff));
+      ioff++;
     }
-    ioff = 5*n1+3; // because we might have truncated # of atoms in molc 1
+    ioff = 5*n1+2; // because we might have truncated # of atoms in molc 1
     for (i=0 ; i<n2; i++){
+      for (k=0; k<3; k++){
+        crd2[i][k] = PyFloat_AsDouble(PyList_GET_ITEM(atom_data, (Py_ssize_t)ioff));
+        ioff++;
+      }
       rad2[i] = PyFloat_AsDouble(PyList_GET_ITEM(atom_data, (Py_ssize_t)ioff));
       ioff++;
-    }
-    for (i=0 ; i<n2; i++){
       q2[i] = PyFloat_AsDouble(PyList_GET_ITEM(atom_data, (Py_ssize_t)ioff));
       ioff++;
-    }
-    for (nm=0 ; nm<nmod; nm++){
-      for (i=0 ; i<n2; i++){
-        for (k=0; k<3; k++){
-          crd2[nm][i][k] = PyFloat_AsDouble(PyList_GET_ITEM(atom_data, (Py_ssize_t)ioff));
-          ioff++;
-        }
-      }
     }
     // printf ("# atoms %d %d ioff %d \n",n1,n2,ioff);
     // printf(" x1  %f xN %f \n",crd1[0][0],crd1[n1-1][2]);
@@ -188,54 +166,12 @@ static PyObject * energy_c(PyObject *self, PyObject *args)
     /*
     calculate energies
     */
-    rcut2 = RCUT*RCUT;
-    efact = 332./DIEL;
-    // start model selection
-    et_best = 1.e6;
-    nbest = 0;
-    for (nm=0 ; nm<nmod; nm++){
-      et = 0.;
-      for (i=0;i<n1;i++){
-        for (j=0;j<n2;j++){
-          d2 = 0.;
-          for (k=0;k<3;k++){
-            dxyz[k] = (crd1[i][k] - crd2[nm][j][k]);
-            d2 = d2 + dxyz[k]*dxyz[k];
-          }
-          if (d2 < rcut2){
-            sigma = rad1[i] + rad2[j];
-            dd = sqrt(d2) + 1.e-3;
-            rr = sigma/dd;
-            rr2 = rr*rr;
-            rr6 = rr2*rr2*rr2;
-            //
-            // 12-6 potl
-            //
-            // rr12 = rr6*rr6;
-            // evdw = 4.*EPS*(rr12 - rr6);
-            //
-            // 9-6 potl
-            //
-            rr9 = rr6*rr2*rr;
-            evdw = 27.*EPS*(rr9 - rr6)/4.;
-            eelect = efact*q1[i]*q2[j]/dd;
-            et = et + evdw + eelect;
-          }
-        }
-      }
-      if(et < et_best){
-        et_best = et;
-        nbest = nm;
-        // printf("best model %d %f \n",nbest,et_best);
-      }
-    }
-    nm = nbest;
-    // printf("using model %d \n",nm);
-    // end model selection
     ninter = 0;
     et = 0.;
     ee = 0.;
     ev = 0.;
+    rcut2 = RCUT*RCUT;
+    efact = 332./DIEL;
     for (k=0;k<3;k++){
       dxyz_at[k] = 0;
     }
@@ -246,7 +182,7 @@ static PyObject * energy_c(PyObject *self, PyObject *args)
       for (j=0;j<n2;j++){
         d2 = 0.;
         for (k=0;k<3;k++){
-          dxyz[k] = (crd1[i][k] - crd2[nm][j][k]);
+          dxyz[k] = (crd1[i][k] - crd2[j][k]);
           d2 = d2 + dxyz[k]*dxyz[k];
         }
         if (d2 < rcut2){
@@ -275,7 +211,7 @@ static PyObject * energy_c(PyObject *self, PyObject *args)
           if (fabs(e_at) >= fabs(e_at_max)){
             e_at_max = e_at;
             for (k=0;k<3;k++){
-              xyzmid[k] = crd2[nm][j][k] + dxyz[k]/2.;
+              xyzmid[k] = crd2[j][k] + dxyz[k]/2.;
               dxyz_at[k] = dxyz[k];
             }
           }
@@ -385,8 +321,6 @@ static PyObject * energy_c(PyObject *self, PyObject *args)
     dsd[ndata] = ee;
     ndata++;
     dsd[ndata] = ev;
-    ndata++;
-    dsd[ndata] = nbest;
     ndata++;
     dsd[0] = ndata; // we temp overwrite LINEWIDTH with ndata, 
     // printf ("display object length %d \n",ndata);
