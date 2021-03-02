@@ -1,9 +1,0 @@
-dockeyeM_c.py
-version 1:
-v1.1
-  branch off dockeye_c_v2.3 to dock multiple conformations
-  simultaneously
-v1.2
-  implement low energy memory bar from dockeye_c_v2.4.py
-  and write model to log file - need to have dedicate dockeye_getpose
-  code to retrieve model as well as pose
