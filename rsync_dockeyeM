@@ -1,6 +1,10 @@
-rsync -avulz --delete --exclude \*.o --exclude \Makefile  \
-  --exclude \*.log --exclude .\*.swp \
-  ~/source/dockeye_multi/ ~/Dropbox/kas_files/dockeye_multi/
+#
+# how to push on github: git push https://github.com/kimandsharp/dockeye_multi master
+#=======================================
+#rsync -avnulz --delete --exclude \*.o --exclude \Makefile  \
+#  --exclude \*.log --exclude .\*.swp --exclude .git \
+#  ~/source/dockeye_multi/ ~/Dropbox/kas_files/dockeye_multi/
+#exit
 rsync -avulz --exclude \*.o --exclude \Makefile  \
-  --exclude \*.log --exclude .\*.swp \
+  --exclude \*.log --exclude .\*.swp --exclude .git \
   ~/Dropbox/kas_files/dockeye_multi/ ~/source/dockeye_multi/
