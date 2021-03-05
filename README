@@ -1,81 +1,94 @@
 ===============================
-Dockeye_multi is an interactive graphical tool 
+dockeye_multi is an interactive graphical tool 
 to dock small ligands/drugs to proteins
-Currently works as a plugin to PyMol,
-which simply is used as a graphic rendering engine
-this is a fork off dockeye that handles multple
-ligand conformations- this requies an extra
-setup step to place multiple pregenerated 
-conformer entries into the ligand pdb file.
+It works as a plugin to PyMol,
+which is used as a graphic rendering engine.
+===============================
+How to cite Dockeye in published work:
+Baskaran, S. G.; Sharp, T. P.; Sharp, K. A. 
+Computational Graphics Software for Interactive 
+Docking and Visualization of Ligand–Protein Complementarity. 
+J. Chem. Inf. Model. 2021. https://doi.org/10.1021/acs.jcim.0c01485.
+
 
 ===============================
 directories:
 ===============================
 src (source files, shared object file, makefile)
-example (all files needed to run two
-examples interleukin and antibody_digoxin)
+ sub_directories src_c, src_f contain the C and
+ Fortran versions of the dockeye backend. The C version
+ is full operational. The Fortran version is a straight
+ translation using f2py, but lags behind the c. 
+ Both produce a module importable
+ into Python. The C version has been tested on several platforms.
+ The Fortran version works but has only been tested on one platform
+ example (all files needed to run the examples 
+ trypsin/benzamidine, interleukin and antibody_digoxin)
 
 ===============================
 INSTALLATION
 ===============================
+USING downloaded builds (shared object files)
+===============================
+FOR MacOS, Ubuntu Linux (and possibly other Linux Distros)
+change to the src directory in the dockeye home directory
+make a soft link to the correct *.so
+On MacOs
+ln -s -i src_c/dockeyeM_energy_MacOS_python27_64bit.so dockeyeM_energy.so
+On Ubuntu Linux 16.04:
+ln -s -i src_c/dockeyeM_energy_linux16_python27_32bit.so dockeyeM_energy.so
+On Ubuntu Linux 14.04
+ln -s -i src_c/dockeyeM_energy_linux14_python27_32bit.so dockeyeM_energy.so
 
-1)
-If you are lucky, the shared object file dockeyeM_energy.so
-provided in the src will work- it is a 32 bit library because that
-is what a lot of pymol versions uses. Otherwise go to 
-Option 2) compile from C code
+note some builds are 32bit because they work with older PyMol 
+versions (pre-schrodinger and ones compiled from source at sourceforge.net). 
 
-try 
-% file dockeyeM_energy.so
-to see what kind of file it is
 
-try 
-% ldd dockeyeM_energy.so
-to list system libraries it uses, if it finds them you are good to go!
-otherwise you probably need to install 32-bit environment on your machine
-or add suitable entries in your $LD_LIBRARY environment variable path.
+===============================
+COMPILING FROM SOURCE
+===============================
+alternatively, you can compile from C code
 
-create a soft link to dockeye_energy.so in the src directory
-from your PyMol installation's default directory for dynamic library loads, 
-this  is somewhere like
-/home/sharp/Downloads/pymol/ext/lib/python2.4/lib-dynload/
+some useful commands in this regard
+% file <filename>.so # type of file : 32 bit/64 bit, binary, ELF etc
+% otool <filename>.so # lists all required libraries and whether the are found 
+(linux equiv cmd: ldd)
 
-2)
-Compile from source code
+Change to the directory src_c 
 A single C source file dockeyeM_energy.c needs to be compiled
-to generate the 32bit shared object file dockeyeM_energy.so
-since this object file will be imported as a module in Python
-you'll need the python2.7 development/include (usually part of the 
-standard Python install)
+to generate the shared object file to be soft linked to dockeyeM_energy.so
+in the parent src directory
+compile using the gcc compiler, using the makefile.
+The makefile has various rules for MacOS and ubuntu Linux which
+should work with little modification
 
-Look at the Makefile, which has rules for Ubuntu Linux and Mac OS,
-and edit to match your OS. After compilation create link as in Option 1
+Since this object file will be imported as a module in Python
+it needs the python2.7 include file: Python.h
+(may be part of your standard python install, or you
+may need to install the Python development package)
+Then if necessary edit the compiler options in the makefile:
 
-===============================
-to use dockeye_multi within PyMol:
-===============================
-By convention here a pdb file with radii in occ. and charges in b-factor
-columns has the *.atm extension.
-1)
-Prepare your protein structure file in pdb format:
-Add atomic radius and atomic charge into occupance and bfactor columns.
-see the dockeye README for details.
+-I<directory_where_Python.h_lives>
+-lpython2.7  # should not need to change this default (this is for PyMol builds that use the python2.7)
+-L<directory_where_PyMol's_Python_dynamic/shared_library_lives>
 
-the ligand prep differs in dockeye_multi: you need to pre-generate 
-the conformers you want to explore and put them into the 
-pdb format atm file, using the 
-MODEL
-ENDMDL
-separators used for NMR structures.
+use the python-config command with --includes --libs and --ldflags
+to find out where things are on your OS.
 
-one way to do this is
+PyMol comes with its own Python install. This is the Python
+that will import the dockeye module dockeyeM_energy,
+so the compile may need the same libraries as PyMol's Python,
+NOT the system Python libraries, EVEN if they are version 2.7
+On MacOS, this may mean putting the path to the libraries hidden inside the PyMol.app
+directory, like:
 
-1a) generate a lignad *.pdbqt file from the pdb file using the autodock
-MGL tools.  This will do 3 things: add hydrogens, add charges, and
-specify which bonds (torsions) can rotate
-1b) run make_conformers.py on this *.pdbqt file to generate the 
-conformers in pdb format.  this file is used in dockeye_multi,
-along with the standard *.atm protein file
+-L/Applications/PyMOL.app/Contents/lib/ # on my mac
 
+or:
+-L/home/sharp/Downloads/pymol/ext/lib/ on ubuntu 16.02
 
-For more details on using dockeye, run the example directory cases
+More recent PyMol builds use python3.6 and later, so the the rules in the makefile
+should be changed to use python3.X includes and library directories
+
+for details on using dockeye_multi, read dockeye_workflow.pdf
+and run the examples
