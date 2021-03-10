@@ -6,5 +6,6 @@
 #  ~/source/dockeye_multi/ ~/Dropbox/kas_files/dockeye_multi/
 #exit
 rsync -avulz --exclude \*.o --exclude \Makefile  \
-  --exclude \*.log --exclude .\*.swp --exclude .git \
+  --exclude \*.log --exclude .\*.swp --exclude .git --exclude rsync_dockeyeM \
+  --exclude src/dockeyeM_c.py --exclude src/dockeyeM_energy.so \
   ~/Dropbox/kas_files/dockeye_multi/ ~/source/dockeye_multi/
