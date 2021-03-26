@@ -1,17 +1,72 @@
+dockeye_multi code
+--------------------
 dockeyeM_energy.c  C code backend interaction energy compute engine
-dockeyeM_energy.so  shared object file compiled from dockeye_energy.c
+                   (as of june 2020, this now lives in the src_c subdirectory;
+                   (a Fortran version is in src_f)
+dockeyeM_energy_XX.so  shared object file compiled from dockeyeM_energy(.c/.f)
                    as an importable Python module
+                   (this is produced by the makefile in either the src_c or src_f 
+                   subdirectory depending on language used, and it should
+                   be pointed to by a soft link named dockeyeM_energy.so in
+                   the parent directory, src)
 dockeyeM_c_vX.Y.py  version X.Y python code run within PyMol, which 
                    implements the graphical front end. Imports the
-                   module dockeye_energy from dockeye_energy.so
+                   module dockeyeM_energy from dockeyeM_energy.so
                    to run the backend
-dockeyeM_c.py       logical link to specific version code, link to this
-                   file should be placed in your PyMol installation's
-                   external package dynamic load directory,
-                   ...pymol....something/lib-dynload
+dockeyeM_c.py      logical link to specific version code, 
+dockeye_methods.py defs/classes/methods 
+matrix3.py         basic vector/matrix ops for make_conformers.py
+
+helper/prep programs
+--------------------
+dockeye_prep.py    optional prep stage. Using your pdb format files,
+                   will nicely position your
+                   protein and ligand ready for dockeye
+                   note this does NOT do the charge/radius assignment
+                   and pasting into the occupancy and b-factor fields
+                   prep step: that can be done several ways depending
+                   on how your charges are assigned.
+pdbqt_to_pdb.py    reads pdbqt format coordinate file output from autodock tools,
+                   moves autdock charges into bfactor field, and assigns radii.
+                   use on protein target pdbqt file and on ligand pdbqt file 
+make_conformers.py
+make_conformers_flip.py
+random_conformers.py
+sample_conformers.py
+		   each of these python programs generates a ligand *.pdb file 
+		   for use with dockeye_multi that contains multiple ligand conformations
+                   separated by the MODEL/ENDMDL records. They all read the 
+                   torsion/root/branch records placed inside a pdbqt file
+                   by the vina autodock tool, adt. They differ in how they generate
+                   the different conformers: make_conformers.py exhaustively generates 
+                   3^Ntor rotamers around each torsion.  make_conformers.py does the same 
+                   and in addition generates the three 180o flipomers for each conformation, for 
+                   a total of 4*3^Ntor conformations(this can be v. large so limiting to
+                   4-5 torsions or less)
+                   random_conformers.py, and 
+                   sample_conformers.py sample conformers by a MC procedure, 
+                   using the internal non-bonded energy to accept/reject, until required
+                   # of 'lower' energy conformers are generated. This will avoid
+                   conformers with bad steric clashes produced by exhaustive enumeration,
+                   and also handle ligands with arbitrary # of torsions  
+
+ 
+psfpdb_to_atm.py   extracts charges from charm/namd *.psf file, and
+                   pastes these plus atomic radii into the occupancy & b-factor columns
+                   of the given pdb file
+
+post-dockeye
+--------------
 dockeyeM_getpose.py extracts low energy ligand poses from the dockeye
-                   logfile into a pdb format file
-make_conformers.py generates a ligand *.atm file for use with dockeye_multi
-                   from a vina autodock *.pdbqt
-                   file containing multiple ligand conformers based
-                   on rotations around torsions specified in pdbqt file
+                   logfile into a pdb format file, also makes a movie
+                   of all the poses
+
+to use dockeye_multi within PyMol execute: 
+run <full_directory_path>/src/dockeyeM_c.py
+within Pymol's console window. 
+alternatively edit the PyMol script file setup.pml in the example/tryp directory and type
+pymol setup.pml 
+at the command line
+
+for more information on the way to use the various programs, see the 
+dockeye_workflow.pdf document in the parent directory.

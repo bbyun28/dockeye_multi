@@ -10,30 +10,30 @@ make soft links to the correct backend *.so and the correct front end *.py
 On MacOs
 --------------
 PyMol versions using Python2.7
-ln -s -f src_c/dockeyeM_energy_MacOS_python27_64bit.so dockeyeM_energy.so
-ln -s -f src_c/dockeyeM_c_v1.5.py dockeyeM_c.py
+ln -sf src_c/dockeyeM_energy_MacOS_python27_64bit.so dockeyeM_energy.so
+ln -sf src_c/dockeyeM_c_v1.5.py dockeyeM_c.py
 
 PyMol versions using Python3.X
-ln -s -f src_f/dockeyeM_energy.cpython-37m-darwin.so dockeyeM_energy.so
-ln -s -f src_f/dockeyeM_c_v1.3.py dockeyeM_c.py
-
-On Ubuntu Linux 16.04:
----------------------
-PyMol versions using Python2.7
-ln -s -f src_c/dockeyeM_energy_linux16_python27_32bit.so dockeyeM_energy.so
-ln -s -f src_c/dockeyeM_c_v1.5.py dockeyeM_c.py
+ln -sf src_f/dockeyeM_energy.cpython-37m-darwin.so dockeyeM_energy.so
+ln -sf src_f/dockeyeM_f_v1.4.py dockeyeM_c.py
 
 On Ubuntu Linux 14.04
 ---------------------
 PyMol versions using Python2.7
-ln -s -f src_c/dockeyeM_energy_linux14_python27_32bit.so dockeyeM_energy.so
-ln -s -f src_c/dockeyeM_c_v1.5.py dockeyeM_c.py
+ln -sf src_c/dockeyeM_energy_linux14_python27_32bit.so dockeyeM_energy.so
+ln -sf src_c/dockeyeM_c_v1.5.py dockeyeM_c.py
+
+On Ubuntu Linux 16.04:
+---------------------
+PyMol versions using Python2.7
+ln -sf src_c/dockeyeM_energy_linux16_python27_32bit.so dockeyeM_energy.so
+ln -sf src_c/dockeyeM_c_v1.5.py dockeyeM_c.py
 
 On Ubuntu Linux 14.04/16.04:
 ---------------------
 PyMol versions using Python3.7
-ln -s -f src_f/dockeyeM_energy.cpython-37m-x86_64-linux-gnu.so dockeyeM_energy.so
-ln -s -f src_f/dockeyeM_c_v1.3.py dockeyeM_c.py
+ln -sf src_f/dockeyeM_energy.cpython-37m-x86_64-linux-gnu.so dockeyeM_energy.so
+ln -sf src_f/dockeyeM_f_v1.4.py dockeyeM_c.py
 
 note some builds are 32bit because they work with older PyMol 
 versions (pre-schrodinger and ones compiled from source at sourceforge.net). 

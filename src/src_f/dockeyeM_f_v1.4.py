@@ -7,11 +7,8 @@
 # usage inside pymol command window: de('protein_target.pdb','ligand.pdb')
 # target protein 1st, then ligand- ligand pdb file must have at least one conformation
 # bracketed by MODEL, ENDMDL records
-# TODO: 
-# overlap all conformers at read time
-# compute energy for all conformers, but only generate dockeye object
-# for lowest energy conformer
-# 22 apr 2020 add ability to save/restore poses
+# branch off dockeyeM_c_v1.3.py to use fortran energy subroutine
+# interfaced by numpy.f2py
 #
 #############################################
 import sys
@@ -22,6 +19,7 @@ from pymol.cgo import *
 from pymol import cmd
 from dockeye_methods import *
 import dockeyeM_energy
+import numpy as np
 
 #=======================================
 # defs to create cgo object directly rather than reading from file
@@ -180,6 +178,7 @@ class Dockeye(Callback):
         self.qtot1 += self.pdb1.bfact[i]
       for i in range(self.pdb2.natom):
         self.qtot2 += self.pdb2.bfact[i]
+    print('using fortran version')
     print('# of atoms 1: %6d   2: %6d' % (self.pdb1.natom,self.pdb2.natom))
     print('geometric centers: ')
     print('1:  %8.3f %8.3f %8.3f ' % (self.gcen1[0],self.gcen1[1],self.gcen1[2]))
@@ -575,6 +574,8 @@ def pdb_interaction(pdbmat1,pdbmat2,pdb1,pdb2,gcen1,gcen2,energy,do_mm,logscale,
   DIEL = 80.
   efact = 332./DIEL # dielectric constant factor gives kcal/mole for p+ unit charge, Angstroms
   EPS = 0.1 # depth of vdw potl. kcal/mole
+  maxobjdata = 20000
+  energy_obj = np.zeros(maxobjdata,float)
   #=========================================
   # extract rot mat
   rmt1 = [[pdbmat1[0],pdbmat1[1],pdbmat1[2]],
@@ -656,7 +657,9 @@ def pdb_interaction(pdbmat1,pdbmat2,pdb1,pdb2,gcen1,gcen2,energy,do_mm,logscale,
   atom_data[0] = float(nat1) # now we know # of atoms, put in front of data array
   atom_data[1] = float(nat2)
   atom_data[2] = float(nmod)
-  energy_obj = dockeyeM_energy.energy_c(atom_data)
+  # now call fortran version, where energy_obj is an argument
+  # not a function return pointer
+  dockeyeM_energy.energy_f(energy_obj,atom_data)
   ndata = int(energy_obj[0])
   #print('ndata: ',type(ndata))
   #print('ndata: ',ndata)
@@ -672,6 +675,7 @@ def pdb_interaction(pdbmat1,pdbmat2,pdb1,pdb2,gcen1,gcen2,energy,do_mm,logscale,
   # generate true Pymol object- one returned from C doesn't seem to work
   cgo_obj = []
   #for i in range(ndata): # bug- shouldn't pass energy, nbest!
+  #for i in range(ndata-3):
   for i in range(ndata-4): #  29 nov 2020 -4 is correct: -3 leave etotal behind
     cgo_obj.append(energy_obj[i])
   pnl_make(rmt1,rmt2,gcen1,gcen2,trn1,trn2,energy,emin)
