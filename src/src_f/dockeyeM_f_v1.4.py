@@ -7,7 +7,7 @@
 # usage inside pymol command window: de('protein_target.pdb','ligand.pdb')
 # target protein 1st, then ligand- ligand pdb file must have at least one conformation
 # bracketed by MODEL, ENDMDL records
-# branch off dockeyeM_c_v1.3.py to use fortran energy subroutine
+# branch off dockeyeM_c_v1.4.py to use fortran energy subroutine
 # interfaced by numpy.f2py
 #
 #############################################
@@ -97,7 +97,7 @@ def pymol_cgo_addtri(cgo_obj,v1,v2,v3,color,nm):
 #def de(pdbfile1="ag.pdb",pdbfile2="ab.pdb",charges=True):
 #def de(pdbfile1="ab.pdb",pdbfile2="ag.pdb",charges=True,logscale=True,dielectric=80.,eps=0.1):
 #def de(pdbfile1="ab.pdb",pdbfile2="ligand.pdbqt",charges=True,logscale=True,dielectric=80.,eps=0.1):
-def de(pdbfile1="IL1B.atm",pdbfile2="MIM_tor.atm",charges=True,logscale=True,dielectric=80.,eps=0.1):
+def de(pdbfile1="IL1B.atm",pdbfile2="MIM_tor.atm",charges=True,logscale=True,dielectric=80.,eps=0.1,handle=False):
   # extract names, and create the 'object' name in the pymol menu window
   print('22 apr 2020 add ability to save/restore poses')
   #pdbobj1 = pdbfile1[:-4]
@@ -108,7 +108,7 @@ def de(pdbfile1="IL1B.atm",pdbfile2="MIM_tor.atm",charges=True,logscale=True,die
   #
   # Dockeye class reads pdb file upon init
   pdbobj2 = 'dockeye_lig'
-  obj = Dockeye(pdbfile1,pdbfile2,pdbobj1,pdbobj2,charges,logscale,dielectric,eps)
+  obj = Dockeye(pdbfile1,pdbfile2,pdbobj1,pdbobj2,charges,logscale,dielectric,eps,handle)
   #
   # but pymol also loads first ligand model for display
   cmd.load('dockeye_lig.pdb',pdbobj2)
@@ -124,7 +124,7 @@ def de(pdbfile1="IL1B.atm",pdbfile2="MIM_tor.atm",charges=True,logscale=True,die
 
 #=======================================
 class Dockeye(Callback):
-  def __init__(self,pdbfile1,pdbfile2,pdbobj1,pdbobj2,charges,logscale,dielectric,eps):
+  def __init__(self,pdbfile1,pdbfile2,pdbobj1,pdbobj2,charges,logscale,dielectric,eps,handle):
     # calling arguments
     self.pdbfile1 = pdbfile1
     self.pdbfile2 = pdbfile2
@@ -143,7 +143,7 @@ class Dockeye(Callback):
     self.pdb1 = pdb_struct()
     self.pdb1.readfile(self.pdbfile1)
     self.pdb2 = pdb_struct()
-    self.pdb2.readligand(self.pdbfile2)
+    self.pdb2.readligand(self.pdbfile2,handle)
     self.iconf = self.pdb2.nmodel
     #self.iconf = 2
     self.objmat1 = [1.,0.,0.,1., 0.,1.,0.,0., 0.,0.,1.,0., 0.,0.,0.,1.]

@@ -1,10 +1,11 @@
-===============================
 dockeye_multi is an interactive graphical tool 
 to dock small ligands/drugs to proteins
 It works as a plugin to PyMol,
 which is used as a graphic rendering engine.
+
 ===============================
 How to cite Dockeye in published work:
+===============================
 Baskaran, S. G.; Sharp, T. P.; Sharp, K. A. 
 Computational Graphics Software for Interactive 
 Docking and Visualization of Ligand–Protein Complementarity. 
@@ -17,17 +18,19 @@ directories:
 src (source files, shared object file, makefile)
  sub_directories src_c, src_f contain the C and
  Fortran versions of the dockeye backend. The C version
- is full operational. The Fortran version is a straight
- translation using f2py, but lags a version behind the c. 
- (i.e. may not have the latest widget)
+ is was primarily developed for 32 bit versions of PyMol. 
+ The Fortran version is a straight
+ translation using f2py, and was developed to avoid problems
+ with interfacing C and Python 3.X on Mac OS
  Both produce a module importable into Python 
  The C version has been tested and works for PyMol
  distros 1.9-2.2 running Python2.7 on Linux, MacOS
- The FORTRAN version has been tested and works for PyMol2.2
- distros running Python3.6/7 on Linux, MacOS
+ The FORTRAN version has been tested and works for PyMol2.X
+ distros running Python3.6/7/8 on Linux, MacOS
 
 example (all files needed to run the examples 
- trypsin/benzamidine, interleukin and antibody_digoxin)
+ trypsin/benzamidine, carbonic anhydrade, 
+ interleukin and antibody_digoxin)
 
 ===============================
 INSTALLATION
