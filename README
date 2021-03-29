@@ -1,7 +1,10 @@
 dockeye_multi is an interactive graphical tool 
-to dock small ligands/drugs to proteins
+to dock ligands/drugs to protein targets.
 It works as a plugin to PyMol,
 which is used as a graphic rendering engine.
+it may also be used as a tool to analyze the
+favorable and unfavorable interactions in a
+known ligand-target complex
 
 ===============================
 How to cite Dockeye in published work:
